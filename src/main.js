@@ -17,13 +17,17 @@ uniform float uPhaseStep;
 uniform float uStepSize;
 uniform float uSquareSize;
 uniform float uBorder;
-uniform float uIsColorful;
+uniform int uPalette;
 
-// Corner colors:
-vec3 color_tl = vec3(0.0, 1.0, 0.0); // Top left: Green.
-vec3 color_bl = vec3(0.0, 0.0, 1.0); // Bottom left: Blue.
-vec3 color_tr = vec3(1.0, 0.5, 0.0); // Top right: Orange.
-vec3 color_br = vec3(1.0, 0.0, 0.0); // Bottom right: Red.
+// Corner colors.
+vec3 colorGreen = vec3(0.0, 1.0, 0.0);
+vec3 colorBlue = vec3(0.0, 0.0, 1.0);
+vec3 colorOrange = vec3(1.0, 0.5, 0.0);
+vec3 colorRed = vec3(1.0, 0.0, 0.0);
+vec3 colorPurple1 = vec3(0.5, 0.0, 1.0);
+vec3 colorPurple2 = vec3(0.3, 0.4, 1.0);
+vec3 colorPurple3 = vec3(0.3, 0.1, 0.5);
+vec3 colorPurple4 = vec3(0.1, 0.0, 0.3);
 
 void main() {
     vec2 uv = (gl_FragCoord.xy / uResolution.xy) * 2.0 - 1.0;
@@ -52,12 +56,16 @@ void main() {
     // Compute uv01 from rotated coordinates
     vec2 uv01_rotated = gridUv / uResolution.xy;
 
-    // Bilinear interpolation
-    vec3 color_left = mix(color_bl, color_tl, uv01_rotated.y);
-    vec3 color_right = mix(color_br, color_tr, uv01_rotated.y);
-    vec3 gradientColor = mix(color_left, color_right, uv01_rotated.x);
+	// colorGreen if uPalette is 1, colorPurple1 if uPalette is 2.
+	vec3 colorTopLeft = (uPalette == 1) ? colorGreen : colorPurple1;
+	vec3 colorBottomLeft = (uPalette == 1) ? colorBlue : colorPurple2;
+	vec3 colorTopRight = (uPalette == 1) ? colorOrange : colorPurple3;
+	vec3 colorBottomRight = (uPalette == 1) ? colorRed : colorPurple4;
+    vec3 colorLeft = mix(colorBottomLeft, colorTopLeft, uv01_rotated.y);
+    vec3 colorRight = mix(colorBottomRight, colorTopRight, uv01_rotated.y);
+    vec3 gradientColor = mix(colorLeft, colorRight, uv01_rotated.x);
     vec3 bwColor = vec3(1.0);
-    vec3 baseColor = (uIsColorful > 0.5) ? gradientColor : bwColor;
+    vec3 baseColor = (uPalette > 0) ? gradientColor : bwColor;
 
     // Grid: use pixel units so each cell is square.
     float gridPixelSize = uSquareSize;
@@ -85,7 +93,7 @@ const variants = [
 		uStepSize: 142,
 		uSquareSize: 100,
 		uBorder: 0.25,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 	// Rainbow.
 	{
@@ -95,7 +103,7 @@ const variants = [
 		uStepSize: 160,
 		uSquareSize: 1,
 		uBorder: 0,
-		uIsColorful: 1,
+		uPalette: 1,
 	},
 	// Wavy squares at the edges.
 	{
@@ -105,7 +113,7 @@ const variants = [
 		uStepSize: 1,
 		uSquareSize: 120,
 		uBorder: 0.3,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 	// Interlaced stripes (2 sections).
 	{
@@ -115,7 +123,7 @@ const variants = [
 		uStepSize: 10,
 		uSquareSize: 160,
 		uBorder: 0.2,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 	// Interlaced stripes (3 sections).
 	{
@@ -125,7 +133,7 @@ const variants = [
 		uStepSize: 18,
 		uSquareSize: 160,
 		uBorder: 0.3,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 	// Graph paper.
 	{
@@ -135,32 +143,42 @@ const variants = [
 		uStepSize: 100,
 		uSquareSize: 20,
 		uBorder: 0.05,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 	// Twisting rug.
 	{
 		uMaxAngle: 200 * Math.PI, // 100 turns.
 		uSpeed: 0.001,
-		uPhaseStep: Math.PI / 120,
+		uPhaseStep: Math.PI / 180,
 		uStepSize: 4,
 		uSquareSize: 20,
+		uBorder: 0.3,
+		uPalette: 1,
+	},
+	// Twisting rug 2.
+	{
+		uMaxAngle: 200 * Math.PI, // 100 turns.
+		uSpeed: 0.001,
+		uPhaseStep: Math.PI / 800,
+		uStepSize: 2,
+		uSquareSize: 10,
 		uBorder: 0.15,
-		uIsColorful: 1,
+		uPalette: 2,
 	},
 	// Dot ripple.
 	{
-		uMaxAngle: Math.PI / 100,
+		uMaxAngle: Math.PI / 90, // 2 degrees.
 		uSpeed: 4,
 		uPhaseStep: Math.PI / 42,
 		uStepSize: 10,
 		uSquareSize: 42,
 		uBorder: 0.42,
-		uIsColorful: 0,
+		uPalette: 0,
 	},
 ];
 
 Object.entries(variants[0]).forEach(([key, value]) => {
-	shader.initializeUniform(key, 'float', value);
+	shader.initializeUniform(key, key === 'uPalette' ? 'int' : 'float', value);
 });
 
 shader.play();
