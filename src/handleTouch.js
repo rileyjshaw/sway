@@ -1,4 +1,4 @@
-export default function handleTouch(element, handler, { threshold = 12 } = {}) {
+export default function handleTouch(element, handler, { threshold = 12, once = false } = {}) {
 	let latestTouchId = null;
 	const prevTouchCoordinates = {};
 
@@ -25,6 +25,8 @@ export default function handleTouch(element, handler, { threshold = 12 } = {}) {
 		if (!prevCoords) return;
 
 		let { x, y, direction } = prevCoords;
+
+		if (direction && once) return;
 
 		const diffX = touch.clientX - x;
 		const diffY = touch.clientY - y;

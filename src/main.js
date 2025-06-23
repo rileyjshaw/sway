@@ -204,10 +204,13 @@ document.addEventListener('keydown', e => {
 	}
 });
 
-handleTouch(document.body, (direction, diff) => {
-	if (direction === 'x') {
-		variantIdx = (variantIdx - Math.sign(diff) + variants.length) % variants.length;
-		shader.updateUniforms(variants[variantIdx]);
-		return { skip: true };
-	}
-});
+handleTouch(
+	document.body,
+	(direction, diff) => {
+		if (direction === 'x') {
+			variantIdx = (variantIdx + Math.sign(diff) + variants.length) % variants.length;
+			shader.updateUniforms(variants[variantIdx]);
+		}
+	},
+	{ once: true }
+);
