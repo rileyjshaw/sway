@@ -1,8 +1,6 @@
 import ShaderPad from 'shaderpad';
 import handleTouch from './handleTouch';
 
-alert('Use arrow keys or swipe to change scene.');
-
 const fragmentShaderSrc = `
 precision highp float;
 
